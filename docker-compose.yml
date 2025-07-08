@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: ny_taxi
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data
+    networks:
+      - taxi-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+    networks:
+      - taxi-network
+
+  metabase:
+    image: metabase/metabase
+    ports:
+      - "3000:3000"
+    networks:
+      - taxi-network
+
+  airflow:
+    image: apache/airflow:2.9.1
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://root:root@postgres:5432/ny_taxi
+      AIRFLOW__CORE__FERNET_KEY: I-hWQWyjXZup88Ssv5ybnQMztqj05C-KuY4lY6ogCno=
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags
+    depends_on:
+      - postgres
+    command: >
+      bash -c "
+        airflow db migrate &&
+        airflow users create --username admin --firstname admin --lastname admin --role Admin --password admin --email admin@admin.com &&
+        airflow webserver
+      "
+    networks:
+      - taxi-network
+
+networks:
+  taxi-network:
+    driver: bridge

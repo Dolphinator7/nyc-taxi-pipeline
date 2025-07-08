@@ -1,0 +1,20 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Airflow
+dags/*.csv
+dags/*.parquet
+logs/
+airflow.db
+unittest.cfg
+
+# Docker volumes
+pg_data/
+.env
+
+# OS files
+.DS_Store
+
+# Secrets (if any)
+*.env
