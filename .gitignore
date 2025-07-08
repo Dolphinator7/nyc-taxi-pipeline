@@ -18,3 +18,4 @@ pg_data/
 
 # Secrets (if any)
 *.env
+etl/yellow_tripdata_2021-01.csv
